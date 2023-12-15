@@ -3,12 +3,15 @@ from dotenv import load_dotenv
 from utils_layer.python import utils 
 # needed in lambda:
 import os
+import os
 import base64
+import json
 import requests
 import utils
 
 client_id: str = os.environ['SPOTIFY_CLIENT_ID']
 client_secret: str = os.environ['SPOTIFY_CLIENT_SECRET']
+aes_key:str = os.environ['AES_KEY']
 redirect_uri: str = utils.redirect_uri
 
 def lambda_handler(event: any, context: any):
@@ -34,9 +37,16 @@ def lambda_handler(event: any, context: any):
     response = requests.post(url = "https://accounts.spotify.com/api/token", data = form, headers = headers)
 
     if response.status_code == 200:
+        raw_json = response.json()
+        return_json = {}
+
+        encrypted_access_token, nonce = utils.encrypt_text(raw_json['access_token'], aes_key)
+        return_json['access_token'] = encrypted_access_token.hex()
+        return_json['nonce'] = nonce.hex()
+
         return_response = {
             'statusCode': response.status_code,
-            'body': response.text,
+            'body': json.dumps(return_json),
         }
     else:
         return_response = {
@@ -51,6 +61,6 @@ def lambda_handler(event: any, context: any):
 if __name__ == "__main__":
     load_dotenv()
 
-    event = {} # test case
+    event = {'queryStringParameters': {'code': "abc"}} # test case
 
     print(lambda_handler(event, None))
