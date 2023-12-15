@@ -1,4 +1,5 @@
 # not needed in lambda:
+from dotenv import load_dotenv
 from utils_layer.python import utils 
 # needed in lambda:
 import os
@@ -11,13 +12,13 @@ client_secret: str = os.environ['SPOTIFY_CLIENT_SECRET']
 redirect_uri: str = utils.redirect_uri
 
 def lambda_handler(event: any, context: any):
-    if 'code' not in event:
+    if 'code' not in event['queryStringParameters']:
         return {
             'statusCode': 400,
-            'body': {'error': 'Missing code parameter'},
+            'body': "{'error': 'Missing code parameter'}",
         }
 
-    authorization_code: str = event['code']
+    authorization_code: str = event['queryStringParameters']['code']
     form = {
         'grant_type': 'authorization_code',
         'code': authorization_code,
@@ -35,14 +36,15 @@ def lambda_handler(event: any, context: any):
     if response.status_code == 200:
         return_response = {
             'statusCode': response.status_code,
-            'body': response.json(),
+            'body': response.text,
         }
     else:
         return_response = {
             'statusCode': response.status_code,
-            'body': response.json(),
+            'body': response.text,
         }
 
+   
     return return_response
 
 
