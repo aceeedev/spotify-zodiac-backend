@@ -190,4 +190,6 @@ pyrightconfig.json
 *.zip
 */utils_layer/python/*
 !*/utils_layer/*/*.py
+*/requests_layer/python/*
+*/aes_layer/python/*
 test.py

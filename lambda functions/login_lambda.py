@@ -10,7 +10,7 @@ client_id: str = os.environ['SPOTIFY_CLIENT_ID']
 redirect_uri: str = utils.redirect_uri
 
 def lambda_handler(event: any, context: any):
-    scope = ''
+    scope = 'user-read-private user-read-email user-top-read'
     query = {
         'response_type': 'code',
         'client_id': client_id,

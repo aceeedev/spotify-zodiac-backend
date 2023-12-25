@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from utils_layer.python import utils 
 # needed in lambda:
 import os
-import os
 import base64
 import json
 import requests
@@ -53,6 +52,10 @@ def lambda_handler(event: any, context: any):
             'statusCode': response.status_code,
             'body': response.text,
         }
+        
+    return_response['headers'] = {
+        'access-control-allow-origin': "https://spotify-zodiac.netlify.app"
+    }
 
    
     return return_response
