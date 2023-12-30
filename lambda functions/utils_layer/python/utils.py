@@ -1,7 +1,7 @@
 from Crypto.Cipher import AES
 
 # constants:
-redirect_uri: str = 'https://spotify-zodiac.netlify.app'
+redirect_uri: str = 'https://astrolify.netlify.app'
 
 # helper functions:
 def encrypt_text(text: str, key: str):

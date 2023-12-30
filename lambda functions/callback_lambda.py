@@ -1,7 +1,3 @@
-# not needed in lambda:
-from dotenv import load_dotenv
-from utils_layer.python import utils 
-# needed in lambda:
 import os
 import base64
 import json
@@ -54,16 +50,8 @@ def lambda_handler(event: any, context: any):
         }
         
     return_response['headers'] = {
-        'access-control-allow-origin': "https://spotify-zodiac.netlify.app"
+        'access-control-allow-origin': 'https://astrolify.netlify.app'
     }
 
    
     return return_response
-
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    event = {'queryStringParameters': {'code': "abc"}} # test case
-
-    print(lambda_handler(event, None))

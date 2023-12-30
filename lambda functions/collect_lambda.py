@@ -1,14 +1,13 @@
-# not needed in lambda:
-from dotenv import load_dotenv
-from utils_layer.python import utils 
-# needed in lambda:
 import os
-import json
 import hashlib
+import boto3
 import requests
 import utils
 
 aes_key:str = os.environ['AES_KEY']
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('SPOTIFY_ZODIAC')
 
 def lambda_handler(event: any, context: any):
     if 'access_token' not in event['queryStringParameters']:
@@ -20,6 +19,11 @@ def lambda_handler(event: any, context: any):
         return {
             'statusCode': 400,
             'body': "{'error': 'Missing nonce parameter'}",
+        }
+    elif 'house' not in event['queryStringParameters']:
+        return {
+            'statusCode': 400,
+            'body': "{'error': 'Missing house parameter'}",
         }
     
     encrypted_access_token: str = bytes.fromhex(event['queryStringParameters']['access_token'])
@@ -33,7 +37,6 @@ def lambda_handler(event: any, context: any):
     
     response = requests.get(url = 'https://api.spotify.com/v1/me', headers = headers)
 
-    
     hashed_account_id = None
 
     if response.status_code == 200:
@@ -44,7 +47,7 @@ def lambda_handler(event: any, context: any):
     else:
         return {
             'statusCode': response.status_code,
-            'body': response.text,
+            'body': 'c',
         }
     
     # check if user has already submitted before
@@ -72,7 +75,7 @@ def lambda_handler(event: any, context: any):
     else:
         return {
             'statusCode': response.status_code,
-            'body': response.text,
+            'body': 'b',
         }
         
     query = {
@@ -84,21 +87,30 @@ def lambda_handler(event: any, context: any):
     if response.status_code == 200:
         raw_json = response.json()
         
+        i = 0
+        for audio_features in raw_json['audio_features']:
+            for key, value in audio_features.items():
+                if isinstance(value, float):
+                    raw_json['audio_features'][i][key] = str(value)
+                    
+            i += 1
+                
         formatted_json = raw_json
+        formatted_json['Account_id'] = hashed_account_id
+        formatted_json['house'] = int(event['queryStringParameters']['house'])
         formatted_json['count'] = track_count
-
-        # TODO: add to database
-
+        
+        table.put_item(Item=formatted_json)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'access-control-allow-origin': 'https://astrolify.netlify.app',
+            },
+            'body': 'success',
+        }
     else:
         return {
             'statusCode': response.status_code,
-            'body': response.text,
+            'body': 'a',
         }
-    
-
-if __name__ == "__main__":
-    load_dotenv()
-
-    event = {} # test case
-
-    print(lambda_handler(event, None))
