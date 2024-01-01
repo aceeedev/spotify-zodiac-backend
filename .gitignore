@@ -193,3 +193,5 @@ pyrightconfig.json
 */requests_layer/python/*
 */aes_layer/python/*
 test.py
+*.json
+*csv
